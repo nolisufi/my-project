@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vita — The Milk Factory</title>
+<style>
+  :root {
+    --bg: #faf8f5;
+    --panel: #ffffff;
+    --border: #e8e4dc;
+    --text: #3a3226;
+    --muted: #8c8276;
+    --accent: #7eb8da;
+    --accent2: #f4c542;
+    --green: #6baf6b;
+    --red: #d96c6c;
+    --line-bg: #f0ece6;
+    --cap: #4a90c4;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  .game {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text); font-weight: 400; }
+  .stats {
+    display: flex;
+    gap: 24px;
+  }
+  .stat {
+    text-align: right;
+  }
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .stat-value.gold { color: #c49b3f; }
+  .stat-value.milk { color: var(--accent); }
+
+  /* Production Lines */
+  .lines {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .line-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    transition: box-shadow 0.2s;
+  }
+  .line-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .line-card.locked { opacity: 0.5; pointer-events: none; filter: grayscale(0.3); }
+  .line-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .line-name {
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .line-level {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--line-bg);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .line-pipeline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .pipe-stage {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--line-bg);
+    position: relative;
+    overflow: hidden;
+  }
+  .pipe-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    border-radius: 4px;
+    background: var(--accent);
+    transition: width 0.5s;
+  }
+  .pipe-arrow {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .line-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .line-action {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: center;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 8px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .btn:hover { background: var(--line-bg); }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn.primary:hover { background: #6aa8cc; }
+  .btn.upgrade {
+    background: var(--accent2);
+    color: #5a3e00;
+    border-color: var(--accent2);
+  }
+  .btn.upgrade:hover { background: #e8b832; }
+  .btn.buy {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+  }
+  .btn.buy:hover { background: #5e9e5e; }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* Resources Panel */
+  .resources {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .res-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+  .res-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .res-item {
+    text-align: center;
+    padding: 12px 8px;
+    background: var(--line-bg);
+    border-radius: 10px;
+  }
+  .res-icon {
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+  .res-name {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .res-count {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  /* Log */
+  .log {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    max-height: 140px;
+    overflow-y: auto;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .log-entry { padding: 3px 0; border-bottom: 1px solid var(--line-bg); }
+  .log-entry:last-child { border-bottom: none; }
+  .log-entry.good { color: var(--green); }
+  .log-entry.warn { color: #c4a03f; }
+
+  /* Animations */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .producing { animation: pulse 1.5s infinite; }
+  .bottle-icon { font-size: 18px; display: inline-block; }
+  .bottle-icon.producing { animation: pulse 0.6s infinite; }
+
+  /* Tooltip */
+  .tooltip {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  @media (max-width: 600px) {
+    .res-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats { gap: 14px; }
+    .header { flex-direction: column; gap: 12px; text-align: center; }
+    .stats { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+<div class="game">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">Vita <span>Milk Factory</span></div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Coins</div>
+        <div class="stat-value gold" id="coins">$250</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Milk/sec</div>
+        <div class="stat-value milk" id="mps">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resources -->
+  <div class="resources">
+    <div class="res-title">📦 Inventory</div>
+    <div class="res-grid">
+      <div class="res-item">
+        <div class="res-icon">🐄</div>
+        <div class="res-name">Raw Milk</div>
+        <div class="res-count" id="res-raw">0</div>
+      </div>
+      <div class="res-item">
+        <div class="res-icon">🍼</div>
+        <div class="res-name">Bottles</div>
+        <div class="res-count" id="res-bottles">10</div>
+      </div>
+      <div class="res-item">
+        <div class="res-icon">📦</div>
+        <div class="res-name">Packaged</div>
+        <div class="res-count" id="res-packaged">0</div>
+      </div>
+      <div class="res-item">
+        <div class="res-icon">💰</div>
+        <div class="res-name">Sold</div>
+        <div class="res-count" id="res-sold">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Production Lines -->
+  <div class="lines" id="lines-container"></div>
+
+  <!-- Log -->
+  <div class="log" id="log">
+    <div class="log-entry">🏭 Welcome to Vita Milk Factory! Start your first line.</div>
+  </div>
+
+</div>
+
+<script>
+// ─── GAME STATE ──────────────────────────────────
+const state = {
+  coins: 250,
+  rawMilk: 0,
+  bottles: 10,
+  packaged: 0,
+  totalSold: 0,
+  lines: [
+    {
+      id: 'pasteurizer',
+      name: '🥛 Pasteurizer',
+      desc: 'Heats raw milk to kill bacteria',
+      level: 0,
+      maxLevel: 5,
+      baseCost: 100,
+      costMult: 1.8,
+      production: 0,  // raw → processed per tick
+      baseProd: 1,
+      prodMult: 2,
+      unlocked: true,
+      unlockCost: 0,
+    },
+    {
+      id: 'bottler',
+      name: '🍼 Bottling Line',
+      desc: 'Fills bottles with pasteurized milk',
+      level: 0,
+      maxLevel: 5,
+      baseCost: 200,
+      costMult: 2.0,
+      production: 0,
+      baseProd: 1,
+      prodMult: 2,
+      unlocked: false,
+      unlockCost: 150,
+    },
+    {
+      id: 'packager',
+      name: '📦 Packaging Line',
+      desc: 'Crates bottles for shipping',
+      level: 0,
+      maxLevel: 5,
+      baseCost: 400,
+      costMult: 2.2,
+      production: 0,
+      baseProd: 1,
+      prodMult: 2,
+      unlocked: false,
+      unlockCost: 500,
+    },
+    {
+      id: 'shipping',
+      name: '🚚 Shipping Dock',
+      desc: 'Sells packaged crates for profit',
+      level: 0,
+      maxLevel: 5,
+      baseCost: 800,
+      costMult: 2.5,
+      production: 0,
+      baseProd: 1,
+      prodMult: 2,
+      unlocked: false,
+      unlockCost: 1200,
+    },
+  ],
+  log: [],
+};
+
+// ─── HELPERS ─────────────────────────────────────
+function getLine(id) { return state.lines.find(l => l.id === id); }
+function upgradeCost(line) { return Math.floor(line.baseCost * Math.pow(line.costMult, line.level)); }
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+function addLog(msg, cls = '') {
+  state.log.unshift({ msg, cls });
+  if (state.log.length > 50) state.log.pop();
+  renderLog();
+}
+
+function calcMPS() {
+  const ship = getLine('shipping');
+  return ship.unlocked && ship.level > 0 ? ship.baseProd * Math.pow(ship.prodMult, ship.level - 1) : 0;
+}
+
+// ─── PRODUCTION TICK ─────────────────────────────
+function tick() {
+  const pasteurizer = getLine('pasteurizer');
+  const bottler = getLine('bottler');
+  const packager = getLine('packager');
+  const shipping = getLine('shipping');
+
+  // 1. Generate raw milk if pasteurizer is active
+  if (pasteurizer.unlocked && pasteurizer.level > 0) {
+    const gen = pasteurizer.baseProd * Math.pow(pasteurizer.prodMult, pasteurizer.level - 1);
+    state.rawMilk += gen;
+  }
+
+  // 2. Pasteurizer consumes raw → internal (simplified: just uses raw)
+  // 3. Bottler: raw + bottles → packaged
+  if (bottler.unlocked && bottler.level > 0) {
+    const rate = bottler.baseProd * Math.pow(bottler.prodMult, bottler.level - 1);
+    const canBottle = Math.min(state.rawMilk, state.bottles, rate);
+    if (canBottle > 0) {
+      state.rawMilk -= canBottle;
+      state.bottles -= canBottle;
+      state.packaged += canBottle;
+    }
+  }
+
+  // 4. Packager: packaged → crated (keeps as packaged, just quality check)
+  // In our model packaged goods are ready to ship
+  // 5. Shipping: packaged → sold + coins
+  if (shipping.unlocked && shipping.level > 0) {
+    const rate = shipping.baseProd * Math.pow(shipping.prodMult, shipping.level - 1);
+    const canSell = Math.min(state.packaged, rate);
+    if (canSell > 0) {
+      state.packaged -= canSell;
+      const revenue = canSell * 5; // $5 per unit
+      state.coins += revenue;
+      state.totalSold += canSell;
+    }
+  }
+
+  renderStats();
+}
+
+// ─── ACTIONS ─────────────────────────────────────
+function buyUpgrade(lineId) {
+  const line = getLine(lineId);
+  const cost = upgradeCost(line);
+  if (state.coins < cost) return;
+  state.coins -= cost;
+  line.level++;
+  if (line.level === 1) {
+    addLog(`✅ ${line.name} activated! Level 1`, 'good');
+  } else {
+    addLog(`⬆️ ${line.name} upgraded to Level ${line.level} (-$${cost})`, 'good');
+  }
+  renderAll();
+}
+
+function unlockLine(lineId) {
+  const line = getLine(lineId);
+  if (state.coins < line.unlockCost) return;
+  state.coins -= line.unlockCost;
+  line.unlocked = true;
+  addLog(`🔓 ${line.name} unlocked! (-$${line.unlockCost})`, 'good');
+  renderAll();
+}
+
+function buyBottles() {
+  const cost = 30;
+  if (state.coins < cost) return;
+  state.coins -= cost;
+  state.bottles += 10;
+  addLog(`🍼 Bought 10 bottles (-$${cost})`);
+  renderAll();
+}
+
+function buyRawMilk() {
+  const cost = 20;
+  if (state.coins < cost) return;
+  state.coins -= cost;
+  state.rawMilk += 5;
+  addLog(`🐄 Bought 5 raw milk (-$${cost})`);
+  renderAll();
+}
+
+// ─── RENDER ──────────────────────────────────────
+function renderStats() {
+  document.getElementById('coins').textContent = '$' + state.coins;
+  document.getElementById('mps').textContent = calcMPS();
+  document.getElementById('res-raw').textContent = state.rawMilk;
+  document.getElementById('res-bottles').textContent = state.bottles;
+  document.getElementById('res-packaged').textContent = state.packaged;
+  document.getElementById('res-sold').textContent = state.totalSold;
+}
+
+function renderAll() {
+  renderStats();
+  renderLines();
+}
+
+function renderLines() {
+  const container = document.getElementById('lines-container');
+  container.innerHTML = state.lines.map(line => {
+    if (!line.unlocked) {
+      return `
+        <div class="line-card locked">
+          <div class="line-header">
+            <div class="line-name">🔒 ${line.name.slice(2)}</div>
+            <div class="line-level">Locked</div>
+          </div>
+          <div class="line-info">${line.desc}</div>
+          <div class="line-action">
+            <button class="btn buy" data-action="unlock" data-line="${line.id}" ${state.coins < line.unlockCost ? 'disabled' : ''}>
+              🔓 Unlock — $${line.unlockCost}
+            </button>
+          </div>
+        </div>`;
+    }
+
+    const isActive = line.level > 0;
+    const cost = upgradeCost(line);
+    const canUpgrade = state.coins >= cost && line.level < line.maxLevel;
+    const atMax = line.level >= line.maxLevel;
+    const fillPct = line.level > 0 ? (line.level / line.maxLevel * 100) : 0;
+
+    let actionButtons = '';
+    if (line.id === 'pasteurizer' && isActive) {
+      actionButtons += `<button class="btn" data-action="buy-raw" ${state.coins < 20 ? 'disabled' : ''}>🐄 Buy Raw Milk ($20/5)</button>`;
+    }
+    if (line.id === 'bottler' && isActive) {
+      actionButtons += `<button class="btn" data-action="buy-bottles" ${state.coins < 30 ? 'disabled' : ''}>🍼 Buy Bottles ($30/10)</button>`;
+    }
+
+    if (!atMax) {
+      actionButtons += `<button class="btn upgrade" data-action="upgrade" data-line="${line.id}" ${!canUpgrade ? 'disabled' : ''}>
+        ⬆ Upgrade — $${cost}
+      </button>`;
+    } else {
+      actionButtons += `<span class="tooltip">MAX LEVEL ⭐</span>`;
+    }
+
+    return `
+      <div class="line-card">
+        <div class="line-header">
+          <div class="line-name ${isActive ? 'producing' : ''}">${line.name}</div>
+          <div class="line-level">Lv ${line.level} / ${line.maxLevel}</div>
+        </div>
+        <div class="line-pipeline">
+          <div class="pipe-stage">
+            <div class="pipe-fill" style="width:${fillPct}%"></div>
+          </div>
+        </div>
+        <div class="line-info">${line.desc} ${isActive ? '— Active' : '— Idle'}</div>
+        <div class="line-action">${actionButtons}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderLog() {
+  const logEl = document.getElementById('log');
+  logEl.innerHTML = state.log.slice(0, 15).map(e =>
+    `<div class="log-entry ${e.cls}">${e.msg}</div>`
+  ).join('');
+}
+
+// ─── EVENT DELEGATION ────────────────────────────
+document.getElementById('lines-container').addEventListener('click', (e) => {
+  const btn = e.target.closest('button') || e.target.querySelector('button');
+  if (!btn || btn.disabled) return;
+  const action = btn.dataset.action;
+  const lineId = btn.dataset.line;
+
+  if (action === 'upgrade') buyUpgrade(lineId);
+  else if (action === 'unlock') unlockLine(lineId);
+  else if (action === 'buy-raw') buyRawMilk();
+  else if (action === 'buy-bottles') buyBottles();
+});
+
+// ─── START ───────────────────────────────────────
+renderAll();
+setInterval(tick, 1000);
+
+addLog('💡 Upgrade the Pasteurizer to start producing, then unlock more lines!');
+</script>
+</body>
+</html>
