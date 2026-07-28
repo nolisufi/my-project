@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us — Vita Milk | Qumështorja Vita</title>
+<meta name="description" content="Vita Milk was founded on November 19, 2003 in Peja, Kosovo — the country's first UHT dairy. Part of Devolli Group, built on Tetra Pak technology.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0a111a; --bg-card: #141e2a; --bg-section: #0d1622;
+  --blue: #1565C0; --blue-bright: #1E88E5; --light-blue: #42A5F5;
+  --white: #f2f4f5; --text: #cfd5db; --text-muted: #8a949e;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg-deep);
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  padding-top: 72px;
+}
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 0 48px; height: 72px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(10,17,26,0.9); backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-brand img { height: 36px; width: auto; }
+.nav-brand .brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 700; color: var(--white);
+}
+.nav-links { display: flex; gap: 28px; list-style: none; align-items: center; }
+.nav-links a {
+  text-decoration: none; font-size: 13px; font-weight: 500;
+  color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;
+  transition: color 0.3s;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--white); }
+.nav-links .nav-game {
+  padding: 6px 16px; border: 1px solid var(--blue-bright);
+  border-radius: 20px; color: var(--light-blue) !important;
+  font-weight: 600; transition: all 0.3s;
+}
+.nav-links .nav-game:hover {
+  background: var(--blue); color: #fff !important; border-color: var(--blue);
+}
+
+.page-header {
+  padding: 80px 48px 48px;
+  text-align: center;
+  background: linear-gradient(180deg, #0c1520 0%, var(--bg-deep) 100%);
+}
+.page-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5vw, 56px); font-weight: 900; color: var(--white);
+  margin-bottom: 8px;
+}
+.page-header .sub {
+  font-size: 16px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase;
+}
+.page-header .accent-bar {
+  width: 48px; height: 3px; background: var(--blue-bright);
+  margin: 16px auto 0; border-radius: 2px;
+}
+
+.section { padding: 72px 48px; max-width: 1000px; margin: 0 auto; }
+.section h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 40px); font-weight: 700;
+  color: var(--white); margin-bottom: 18px;
+}
+.section h2 .hl { color: var(--light-blue); }
+.section p {
+  font-size: 16px; color: var(--text); line-height: 1.8; margin-bottom: 16px;
+}
+.section p strong { color: var(--white); }
+
+.timeline {
+  position: relative; padding: 20px 0;
+}
+.timeline::before {
+  content: ''; position: absolute; left: 20px; top: 0; bottom: 0;
+  width: 2px; background: linear-gradient(180deg, var(--blue), var(--light-blue));
+}
+.timeline-item {
+  position: relative; padding-left: 52px; padding-bottom: 32px;
+}
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item .dot {
+  position: absolute; left: 13px; top: 4px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--light-blue); border: 4px solid var(--bg-deep);
+}
+.timeline-item .year {
+  font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 2px;
+}
+.timeline-item p { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+.cards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  margin-top: 32px;
+}
+.card {
+  background: var(--bg-card); border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 14px; padding: 32px;
+  transition: border-color 0.3s;
+}
+.card:hover { border-color: rgba(21,101,192,0.35); }
+.card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 600; color: var(--white); margin-bottom: 10px;
+}
+.card p { font-size: 14px; color: var(--text-muted); margin: 0; line-height: 1.6; }
+
+.values {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  margin-top: 24px;
+}
+.value-item {
+  text-align: center; padding: 28px 20px;
+  background: var(--bg-card); border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.value-icon { font-size: 32px; margin-bottom: 12px; color: var(--light-blue); }
+.value-item h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 600; color: var(--white); margin-bottom: 6px;
+}
+.value-item p { font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5; }
+
+footer {
+  background: #080e14; padding: 48px 48px 36px; text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.05); margin-top: 60px;
+}
+.footer-logo { height: 36px; margin-bottom: 12px; }
+footer .info { font-size: 14px; color: var(--text-muted); line-height: 1.8; }
+footer .social { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+footer .social a { opacity: 0.5; transition: opacity 0.3s; }
+footer .social a:hover { opacity: 1; }
+footer .social img { width: 22px; height: 22px; }
+footer .copyright { font-size: 12px; color: var(--text-muted); margin-top: 20px; opacity: 0.6; }
+
+.reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.revealed { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; height: 60px; }
+  .nav-links { gap: 14px; }
+  .nav-links a { font-size: 11px; letter-spacing: 0; }
+  .section { padding: 48px 20px; }
+  .cards, .values { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img src="assets/logo.png" alt="Vita">
+    <span class="brand-name">Vita Milk</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="products.html">Products</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="factory.html" class="nav-game">🎮 Factory</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <h1>Our Story</h1>
+  <p class="sub">From Peja to Every Kosovar Home</p>
+  <div class="accent-bar"></div>
+</div>
+
+<section class="section">
+  <h2 class="reveal">From Peja to Every <span class="hl">Kosovar Table</span></h2>
+  <p class="reveal reveal-delay-1">
+    Founded on <strong>November 19, 2003</strong> in Peja, Kosovo, Vita Milk began as the country's first dairy to adopt <strong>UHT (Ultra-High Temperature)</strong> processing. Backed by <strong>Devolli Group</strong> and a partnership with <strong>Tetra Pak</strong>, Vita brought world-class dairy technology to Kosovo — making fresh, long-life milk accessible to every family.
+  </p>
+  <p class="reveal reveal-delay-1">
+    For over 20 years, Vita has grown from a single production line into Kosovo's most trusted dairy brand. Our tagline — <strong>"Me ty u rrita"</strong> (I grew up with you) — reflects a generation of Kosovars who have grown up with Vita on their breakfast table.
+  </p>
+
+  <div class="timeline reveal reveal-delay-2" style="margin-top:40px;">
+    <div class="timeline-item">
+      <div class="dot"></div>
+      <div class="year">November 19, 2003</div>
+      <p>Vita Milk founded in Peja, Kosovo — the country's first UHT dairy facility</p>
+    </div>
+    <div class="timeline-item">
+      <div class="dot"></div>
+      <div class="year">2003</div>
+      <p>Strategic partnership established with Tetra Pak for aseptic packaging technology</p>
+    </div>
+    <div class="timeline-item">
+      <div class="dot"></div>
+      <div class="year">2005–2015</div>
+      <p>Expanded product line to include yogurt, ayran, kos, and creams — becoming a full-range dairy</p>
+    </div>
+    <div class="timeline-item">
+      <div class="dot"></div>
+      <div class="year">2023</div>
+      <p>Celebrated 20th anniversary with the campaign "Me ty u rrita" — 20 years of nourishing Kosovar families</p>
+    </div>
+    <div class="timeline-item">
+      <div class="dot"></div>
+      <div class="year">Today</div>
+      <p>A household name across Kosovo, trusted by families, restaurants, and bakeries nationwide</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--bg-section); max-width:100%; padding-left:max(48px, calc((100vw - 1000px)/2)); padding-right:max(48px, calc((100vw - 1000px)/2));">
+  <h2 class="reveal">Backed by <span class="hl">Devolli Group</span></h2>
+  <p class="reveal reveal-delay-1">
+    Vita Milk is a proud member of Devolli Group — one of Kosovo's largest and most respected business conglomerates. This backing provides Vita with the resources, expertise, and commitment to excellence that spans industries.
+  </p>
+  <div class="cards reveal reveal-delay-2">
+    <div class="card">
+      <h3>Devolli Group</h3>
+      <p>Parent company based in Peja — a diversified enterprise driving Kosovo's economic growth across food &amp; beverage, manufacturing, and trade sectors.</p>
+    </div>
+    <div class="card">
+      <h3>Tetra Pak Partnership</h3>
+      <p>Longstanding collaboration with the global packaging leader. Vita was built on Tetra Pak technology from day one, ensuring world-class quality and safety.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="reveal">Our <span class="hl">Values</span></h2>
+  <div class="values">
+    <div class="value-item reveal reveal-delay-1">
+      <div class="value-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h4>Quality First</h4>
+      <p>Every liter tested. UHT processing ensures freshness and safety without compromise.</p>
+    </div>
+    <div class="value-item reveal reveal-delay-2">
+      <div class="value-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <h4>Local Roots</h4>
+      <p>Direct partnerships with Kosovo's dairy farmers. Supporting rural communities.</p>
+    </div>
+    <div class="value-item reveal reveal-delay-3">
+      <div class="value-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <h4>Me ty u rrita</h4>
+      <p>A generation of trust. Kosovars grew up with Vita — and we honor that every day.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <img src="assets/logo-white.png" alt="Vita Milk" class="footer-logo">
+  <p class="info">
+    Peja, Kosovo &nbsp;|&nbsp; +383 39 450552 &nbsp;|&nbsp; info@qumeshtorjavita.com<br>
+    Part of <strong>Devolli Group</strong>
+  </p>
+  <div class="social">
+    <a href="https://facebook.com/qumeshtorjavita" target="_blank"><img src="assets/facebook.svg" alt="Facebook"></a>
+    <a href="https://instagram.com/qumeshtorjavita" target="_blank"><img src="assets/instagram.svg" alt="Instagram"></a>
+  </div>
+  <p class="copyright">&copy; 2003–2026 Qumështorja Vita. All rights reserved. Devolli Group.</p>
+</footer>
+
+<script>
+(function() {
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) { entry.target.classList.add('revealed'); observer.unobserve(entry.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+})();
+</script>
+
+</body>
+</html>

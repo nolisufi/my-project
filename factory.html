@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vita Factory Game — Qumështorja Vita</title>
+<meta name="description" content="Run the Vita Milk factory! Produce fresh dairy products in this interactive browser game.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0a111a; --bg-card: #141e2a;
+  --blue: #1565C0; --blue-bright: #1E88E5; --light-blue: #42A5F5;
+  --white: #f2f4f5; --text: #cfd5db; --text-muted: #8a949e;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: #060d14;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  display: flex; flex-direction: column;
+}
+nav {
+  position: relative; z-index: 10;
+  padding: 0 32px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(6,13,20,0.95); border-bottom: 1px solid rgba(255,255,255,0.05);
+  flex-shrink: 0;
+}
+.nav-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.nav-brand img { height: 28px; }
+.nav-brand span {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 700; color: var(--white);
+}
+.nav-links { display: flex; gap: 20px; list-style: none; align-items: center; }
+.nav-links a {
+  text-decoration: none; font-size: 12px; font-weight: 500;
+  color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-links .nav-game {
+  padding: 5px 14px; border: 1px solid var(--blue-bright);
+  border-radius: 16px; color: var(--light-blue) !important;
+  font-weight: 600; background: rgba(21,101,192,0.1);
+}
+
+#game-wrapper {
+  flex: 1; position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+canvas {
+  display: block;
+  image-rendering: auto;
+}
+
+/* HUD */
+#hud {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 5; display: flex; gap: 24px;
+  pointer-events: none;
+}
+.hud-item {
+  background: rgba(10,17,26,0.9); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 8px 16px;
+  text-align: center; min-width: 80px;
+  backdrop-filter: blur(8px);
+}
+.hud-item .val {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 900; color: var(--white);
+}
+.hud-item .val.hl { color: var(--light-blue); }
+.hud-item .lbl {
+  font-size: 10px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+
+#order-bar {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 5; pointer-events: none;
+  background: rgba(10,17,26,0.92); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 12px 20px;
+  display: flex; align-items: center; gap: 14px;
+  backdrop-filter: blur(8px);
+}
+#order-bar .order-icon {
+  width: 32px; height: 32px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+#order-bar .order-text {
+  font-size: 14px; color: var(--white); font-weight: 500;
+}
+#order-bar .order-progress {
+  font-size: 13px; color: var(--light-blue); font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  nav { padding: 0 12px; }
+  .nav-links { gap: 10px; }
+  .nav-links a { font-size: 10px; letter-spacing: 0; }
+  #hud { gap: 12px; top: 6px; }
+  .hud-item { padding: 6px 12px; min-width: 60px; }
+  .hud-item .val { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img src="assets/logo.png" alt="Vita">
+    <span>Vita Milk</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="products.html">Products</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="factory.html" class="nav-game">🎮 Factory</a></li>
+  </ul>
+</nav>
+
+<div id="game-wrapper">
+  <canvas id="game"></canvas>
+  <div id="hud">
+    <div class="hud-item"><div class="val hl" id="hud-score">0</div><div class="lbl">Score</div></div>
+    <div class="hud-item"><div class="val" id="hud-shipped">0</div><div class="lbl">Shipped</div></div>
+    <div class="hud-item"><div class="val" id="hud-level">1</div><div class="lbl">Level</div></div>
+  </div>
+  <div id="order-bar" style="display:none;">
+    <div class="order-icon" id="order-icon">📦</div>
+    <span class="order-text" id="order-text"></span>
+    <span class="order-progress" id="order-progress"></span>
+  </div>
+</div>
+
+<script>
+(function() {
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var wrapper = document.getElementById('game-wrapper');
+
+  // --- RESIZE ---
+  var W = 1200, H = 750;
+  function resize() {
+    var rw = wrapper.clientWidth, rh = wrapper.clientHeight;
+    var s = Math.min(rw / W, rh / H);
+    canvas.width = W; canvas.height = H;
+    canvas.style.width = (W * s) + 'px';
+    canvas.style.height = (H * s) + 'px';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // --- GAME STATE ---
+  var player = { x: 600, y: 650, w: 18, h: 22, speed: 2.5, dir: 0 };
+  var keys = {};
+  var score = 0, shipped = 0, level = 1;
+
+  // --- MACHINES ---
+  var machines = [
+    { id:'tank',   x:120, y:200, w:100, h:80, label:'Raw Milk\nTank',     color:'#1a3050', active:false, cooldown:0, icon:'🥛' },
+    { id:'pasteur',x:320, y:200, w:100, h:80, label:'Pasteurizer',         color:'#1a3050', active:false, cooldown:0, icon:'🌡️' },
+    { id:'uht',    x:520, y:200, w:100, h:80, label:'UHT\nProcessor',       color:'#1a3050', active:false, cooldown:0, icon:'⚙️' },
+    { id:'filler', x:720, y:200, w:100, h:80, label:'Filling\nStation',     color:'#1a3050', active:false, cooldown:0, icon:'🧴' },
+    { id:'packer', x:920, y:200, w:100, h:80, label:'Packing\nStation',     color:'#1a3050', active:false, cooldown:0, icon:'📦' },
+    { id:'ship',   x:1050,y:420, w:100, h:80, label:'Shipping\nBay',        color:'#1a3050', active:false, cooldown:0, icon:'🚚' },
+  ];
+
+  var productionStep = 0; // 0=idle, 1=tank, 2=pasteur, 3=uht, 4=filler, 5=packer
+  var conveyorItems = []; // {x, y, targetX, product}
+
+  // --- ORDERS ---
+  var order = null;
+  var orderFulfilled = 0;
+  var orderTarget = 0;
+
+  function newOrder() {
+    var products = ['Qumësht 3.2%','Jogurt 1.5%','Ayran','Kos','Cooking Cream'];
+    var p = products[Math.floor(Math.random() * products.length)];
+    orderTarget = 2 + Math.floor(Math.random() * 3) + level;
+    orderFulfilled = 0;
+    order = { product: p, target: orderTarget, fulfilled: 0 };
+    document.getElementById('order-bar').style.display = 'flex';
+    updateOrderHUD();
+  }
+  function updateOrderHUD() {
+    if (!order) { document.getElementById('order-bar').style.display = 'none'; return; }
+    document.getElementById('order-text').textContent = 'Ship: ' + order.product;
+    document.getElementById('order-progress').textContent = order.fulfilled + '/' + order.target;
+  }
+  function fulfillOrder() {
+    if (!order) return;
+    order.fulfilled++;
+    shipped++;
+    score += 100 * level;
+    document.getElementById('hud-score').textContent = score;
+    document.getElementById('hud-shipped').textContent = shipped;
+    updateOrderHUD();
+    if (order.fulfilled >= order.target) {
+      score += 300 * level;
+      document.getElementById('hud-score').textContent = score;
+      level++;
+      document.getElementById('hud-level').textContent = level;
+      document.getElementById('order-bar').style.display = 'none';
+      order = null;
+      setTimeout(newOrder, 2000);
+    }
+  }
+
+  // --- CLICK DETECTION ---
+  var mouseX = 0, mouseY = 0;
+  canvas.addEventListener('mousemove', function(e) {
+    var rect = canvas.getBoundingClientRect();
+    var s = rect.width / W;
+    mouseX = (e.clientX - rect.left) / s;
+    mouseY = (e.clientY - rect.top) / s;
+  });
+  canvas.addEventListener('click', function(e) {
+    var rect = canvas.getBoundingClientRect();
+    var s = rect.width / W;
+    var mx = (e.clientX - rect.left) / s;
+    var my = (e.clientY - rect.top) / s;
+
+    // Check machines
+    for (var i = 0; i < machines.length; i++) {
+      var m = machines[i];
+      if (mx >= m.x && mx <= m.x + m.w && my >= m.y && my <= m.y + m.h) {
+        if (m.cooldown > 0) return;
+        // Check distance to player
+        var dx = player.x - (m.x + m.w/2);
+        var dy = player.y - (m.y + m.h/2);
+        if (Math.sqrt(dx*dx + dy*dy) > 180) {
+          flashMessage('Walk closer to the ' + m.label.split('\n')[0] + '!');
+          return;
+        }
+        activateMachine(i);
+        return;
+      }
+    }
+  });
+
+  function flashMessage(msg) {
+    window._msg = { text: msg, timer: 90 };
+  }
+
+  function activateMachine(idx) {
+    var m = machines[idx];
+    m.active = true;
+    m.cooldown = 60;
+
+    if (m.id === 'tank' && productionStep === 0) {
+      productionStep = 1;
+      flashMessage('Raw milk collected! Go to Pasteurizer →');
+    } else if (m.id === 'pasteur' && productionStep === 1) {
+      productionStep = 2;
+      flashMessage('Pasteurized! Go to UHT Processor →');
+    } else if (m.id === 'uht' && productionStep === 2) {
+      productionStep = 3;
+      flashMessage('UHT processed! Go to Filling Station →');
+    } else if (m.id === 'filler' && productionStep === 3) {
+      productionStep = 4;
+      // Spawn carton on conveyor
+      conveyorItems.push({
+        x: m.x + m.w, y: m.y + m.h/2,
+        targetX: machines[4].x + 10,
+        product: order ? order.product : 'Qumësht 3.2%',
+        progress: 0
+      });
+      flashMessage('Carton filled! Moving to Packing...');
+    } else if (m.id === 'packer' && productionStep === 4) {
+      productionStep = 5;
+      // Move existing conveyor items faster
+      for (var i = 0; i < conveyorItems.length; i++) {
+        if (conveyorItems[i].targetX === machines[4].x + 10) {
+          conveyorItems[i].targetX = machines[5].x + 10;
+          conveyorItems[i].progress = 0;
+        }
+      }
+      flashMessage('Packed! Ship it at the Shipping Bay →');
+    } else if (m.id === 'ship' && productionStep === 5) {
+      productionStep = 0;
+      // Remove completed conveyor items
+      conveyorItems = conveyorItems.filter(function(ci) {
+        if (ci.targetX === machines[5].x + 10) {
+          fulfillOrder();
+          return false;
+        }
+        return true;
+      });
+      flashMessage('Shipped! +' + (100*level) + ' pts. Start new batch!');
+      score += 50;
+      document.getElementById('hud-score').textContent = score;
+    } else {
+      flashMessage('Follow the production line order!');
+    }
+  }
+
+  // --- INPUT ---
+  window.addEventListener('keydown', function(e) { keys[e.key.toLowerCase()] = true; });
+  window.addEventListener('keyup', function(e) { keys[e.key.toLowerCase()] = false; });
+
+  // --- PARTICLES ---
+  var particles = [];
+
+  function spawnParticles(x, y, color, count) {
+    for (var i = 0; i < count; i++) {
+      particles.push({
+        x: x, y: y,
+        vx: (Math.random() - 0.5) * 3,
+        vy: (Math.random() - 0.5) * 3 - 1,
+        life: 30 + Math.random() * 20,
+        color: color, size: 2 + Math.random() * 3
+      });
+    }
+  }
+
+  // --- UPDATE ---
+  function update() {
+    // Player movement
+    var dx = 0, dy = 0;
+    if (keys['w'] || keys['arrowup']) dy = -1;
+    if (keys['s'] || keys['arrowdown']) dy = 1;
+    if (keys['a'] || keys['arrowleft']) dx = -1;
+    if (keys['d'] || keys['arrowright']) dx = 1;
+    if (dx !== 0 || dy !== 0) {
+      var len = Math.sqrt(dx*dx + dy*dy);
+      dx /= len; dy /= len;
+      player.dir = Math.atan2(dy, dx);
+    }
+    player.x += dx * player.speed;
+    player.y += dy * player.speed;
+    player.x = Math.max(14, Math.min(W - 14, player.x));
+    player.y = Math.max(14, Math.min(H - 14, player.y));
+
+    // Machine cooldowns
+    for (var i = 0; i < machines.length; i++) {
+      if (machines[i].cooldown > 0) {
+        machines[i].cooldown--;
+        if (machines[i].cooldown === 0) machines[i].active = false;
+      }
+    }
+
+    // Conveyor items
+    for (var i = conveyorItems.length - 1; i >= 0; i--) {
+      var ci = conveyorItems[i];
+      ci.progress += 0.008;
+      if (ci.progress >= 1) {
+        ci.progress = 1;
+        // Arrived at destination
+        if (ci.targetX === machines[5].x + 10 && productionStep === 5) {
+          // Ready to ship
+        }
+      }
+    }
+
+    // Particles
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.05; p.life--;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    // Message timer
+    if (window._msg) {
+      window._msg.timer--;
+      if (window._msg.timer <= 0) window._msg = null;
+    }
+
+    // Spawn particles on active machines
+    for (var i = 0; i < machines.length; i++) {
+      if (machines[i].active && machines[i].cooldown > 30) {
+        var cx = machines[i].x + machines[i].w/2;
+        var cy = machines[i].y + machines[i].h/2;
+        if (Math.random() < 0.3) spawnParticles(cx, cy, '#42A5F5', 1);
+      }
+    }
+
+    // Start first order
+    if (!order && level === 1 && shipped === 0 && !window._orderStarted) {
+      window._orderStarted = true;
+      newOrder();
+    }
+  }
+
+  // --- DRAW ---
+  function drawFloor() {
+    // Floor
+    ctx.fillStyle = '#0d1520';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.015)';
+    ctx.lineWidth = 1;
+    for (var x = 0; x < W; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (var y = 0; y < H; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    // Conveyor belt track
+    ctx.strokeStyle = 'rgba(66,165,245,0.12)';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([12, 8]);
+    // Horizontal conveyor
+    ctx.beginPath();
+    ctx.moveTo(820, 240); ctx.lineTo(1020, 240);
+    ctx.stroke();
+    // Angled down to shipping
+    ctx.beginPath();
+    ctx.moveTo(1020, 240); ctx.lineTo(1100, 460);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw conveyor arrow animations
+    ctx.fillStyle = 'rgba(66,165,245,0.25)';
+    var t = Date.now() / 1000;
+    for (var cx = 830; cx < 1010; cx += 20) {
+      var offset = (t * 30 + cx) % 20;
+      ctx.fillRect(cx + offset - 10, 237, 8, 6);
+    }
+  }
+
+  function drawMachine(m) {
+    var x = m.x, y = m.y, w = m.w, h = m.h;
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(x + 3, y + 3, w, h);
+
+    // Main body
+    var grad = ctx.createLinearGradient(x, y, x, y + h);
+    if (m.active) {
+      grad.addColorStop(0, '#1e3a5c');
+      grad.addColorStop(1, '#152840');
+    } else {
+      grad.addColorStop(0, '#162438');
+      grad.addColorStop(1, '#0f1a28');
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, y, w, h);
+
+    // Border
+    ctx.strokeStyle = m.active ? 'rgba(66,165,245,0.5)' : 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = m.active ? 2 : 1;
+    ctx.strokeRect(x, y, w, h);
+
+    // Top accent
+    ctx.fillStyle = m.active ? '#1E88E5' : '#1e3046';
+    ctx.fillRect(x, y, w, 6);
+
+    // Window/lights
+    var lightCount = Math.floor(w / 22);
+    for (var i = 0; i < lightCount; i++) {
+      var lx = x + 14 + i * 22;
+      var glow = m.active ? (0.5 + 0.5 * Math.sin(Date.now()/200 + i)) : 0.15;
+      ctx.fillStyle = 'rgba(180,210,250,' + glow + ')';
+      ctx.fillRect(lx, y + 12, 14, 10);
+    }
+
+    // Label
+    ctx.fillStyle = m.active ? '#fff' : '#8a949e';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    var lines = m.label.split('\n');
+    for (var li = 0; li < lines.length; li++) {
+      ctx.fillText(lines[li], x + w/2, y + h - 20 + li * 14);
+    }
+    ctx.textAlign = 'start';
+
+    // Icon
+    ctx.font = '20px Inter, sans-serif';
+    ctx.fillText(m.icon, x + 8, y + 22);
+  }
+
+  function drawPlayer() {
+    var px = player.x, py = player.y;
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(px, py + 9, 8, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Body
+    ctx.fillStyle = '#1E88E5';
+    ctx.beginPath();
+    ctx.arc(px, py - 2, 9, 0, Math.PI * 2);
+    ctx.fill();
+
+    // White hat
+    ctx.fillStyle = '#f2f4f5';
+    ctx.beginPath();
+    ctx.arc(px, py - 7, 7, Math.PI, 0);
+    ctx.fill();
+
+    // V logo on chest
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 8px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('V', px, py + 1);
+    ctx.textAlign = 'start';
+
+    // Direction indicator
+    if (keys['w'] || keys['a'] || keys['s'] || keys['d'] ||
+        keys['arrowup'] || keys['arrowdown'] || keys['arrowleft'] || keys['arrowright']) {
+      ctx.strokeStyle = '#42A5F5';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px + Math.cos(player.dir) * 14, py + Math.sin(player.dir) * 14);
+      ctx.stroke();
+    }
+  }
+
+  function drawConveyorItems() {
+    for (var i = 0; i < conveyorItems.length; i++) {
+      var ci = conveyorItems[i];
+      // Interpolate position
+      var fromX = machines[3].x + machines[3].w; // filler
+      var toX = ci.targetX;
+      var cx = fromX + (toX - fromX) * ci.progress;
+      var cy = 240 + (ci.targetX > machines[4].x + 50 ? (ci.progress * 220) : 0);
+
+      // Carton
+      ctx.fillStyle = '#f2f4f5';
+      ctx.fillRect(cx - 8, cy - 12, 16, 24);
+      ctx.strokeStyle = '#1565C0';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cx - 8, cy - 12, 16, 24);
+
+      // Vita text
+      ctx.fillStyle = '#1565C0';
+      ctx.font = 'bold 6px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('VITA', cx, cy + 2);
+      ctx.textAlign = 'start';
+    }
+  }
+
+  function drawParticles() {
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.life / 50;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawMessage() {
+    if (!window._msg) return;
+    var alpha = Math.min(1, window._msg.timer / 30);
+    ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+    ctx.font = '14px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(window._msg.text, W/2, H - 60);
+    ctx.textAlign = 'start';
+  }
+
+  function drawProximityHints() {
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    for (var i = 0; i < machines.length; i++) {
+      var m = machines[i];
+      var dx = player.x - (m.x + m.w/2);
+      var dy = player.y - (m.y + m.h/2);
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 140 && dist > 40) {
+        ctx.fillText('click', m.x + m.w/2, m.y - 6);
+      }
+    }
+    ctx.textAlign = 'start';
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    drawFloor();
+
+    // Machines
+    for (var i = 0; i < machines.length; i++) {
+      drawMachine(machines[i]);
+    }
+
+    drawConveyorItems();
+    drawPlayer();
+    drawParticles();
+    drawProximityHints();
+    drawMessage();
+
+    // Title
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.font = 'bold 40px "Playfair Display", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('VITA MILK FACTORY', W/2, H - 20);
+    ctx.textAlign = 'start';
+  }
+
+  // --- LOOP ---
+  function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // --- INIT ---
+  resize();
+  loop();
+
+  // Help tooltip
+  setTimeout(function() {
+    flashMessage('WASD to move • Click machines to produce milk • Follow the production line!');
+  }, 500);
+})();
+</script>
+</body>
+</html>
